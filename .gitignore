@@ -1,0 +1,38 @@
+# Environment files that might contain sensitive information
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# OS generated files
+Thumbs.db
+Desktop.ini
+
+# Temporary files
+*.swp
+*.swo
+*~
+
+# Backup files (from editors or database backups)
+*.bak
+*.bak.*
+*.old
+
+# Generated SQL dumps or temporary files from XAMPP/MySQL
+xampp/
+mysql/
+
+# Specific IDE/editor configuration files
+.vscode/
+.idea/
+
+# Metabase or other BI tool export files (if not necessary for versioning)
+*.json
+*.csv
+
+# General build outputs or package files (not required for SQL)
+*.tar.gz
+*.zip
