@@ -1,0 +1,168 @@
+Table students {
+  StudentID INT [pk]
+  FirstName VARCHAR(50)
+  LastName VARCHAR(50)
+  DateOfBirth DATE
+  Gender VARCHAR(10) [check: 'Gender in ("Male", "Female", "Other")']
+  GradeLevel INT
+  EnrollmentDate DATE
+  Email VARCHAR(100)
+  Phone VARCHAR(20)
+  Address VARCHAR(255)
+  EmergencyContact VARCHAR(50)
+  NationalID VARCHAR(50)
+  Status VARCHAR(10) [check: 'Status in ("Active", "Graduated", "Dropped")']
+}
+
+Table teachers {
+  TeacherID INT [pk]
+  FirstName VARCHAR(50)
+  LastName VARCHAR(50)
+  Department VARCHAR(50)
+  Email VARCHAR(100)
+  Phone VARCHAR(20)
+  Office VARCHAR(50)
+  HireDate DATE
+  Status VARCHAR(10) [check: 'Status in ("Active", "Retired", "On Leave")']
+}
+
+Table courses {
+  CourseID INT [pk]
+  CourseName VARCHAR(100)
+  TeacherID INT [ref: > teachers.TeacherID]
+  CourseCode VARCHAR(50)
+  Credits INT
+  Description TEXT
+  Schedule VARCHAR(100)
+  Prerequisites TEXT
+}
+
+Table enrollments {
+  EnrollmentID INT [pk]
+  StudentID INT [ref: > students.StudentID]
+  CourseID INT [ref: > courses.CourseID]
+  Semester VARCHAR(10)
+  Year INT
+  EnrollmentDate DATE
+  Status VARCHAR(10) [check: 'Status in ("Active", "Completed", "Dropped")']
+  WithdrawalDate DATE
+  FinalGrade FLOAT
+}
+
+Table grades {
+  GradeID INT [pk]
+  EnrollmentID INT [ref: > enrollments.EnrollmentID]
+  Grade FLOAT
+  GradeDate DATE
+  Semester VARCHAR(10)
+  Year INT
+  InstructorComments TEXT
+}
+
+Table attendance {
+  AttendanceID INT [pk]
+  StudentID INT [ref: > students.StudentID]
+  CourseID INT [ref: > courses.CourseID]
+  Date DATE
+  Status VARCHAR(10) [check: 'Status in ("Present", "Absent", "Late")']
+  Reason TEXT
+}
+
+Table feedback {
+  FeedbackID INT [pk]
+  StudentID INT [ref: > students.StudentID]
+  TeacherID INT [ref: > teachers.TeacherID]
+  Comment TEXT
+  Rating INT
+  DateSubmitted DATE
+  Anonymous BOOLEAN
+}
+
+Table gradeaudit {
+  AuditID INT [pk]
+  EnrollmentID INT [ref: > enrollments.EnrollmentID]
+  OldGrade FLOAT
+  NewGrade FLOAT
+  ChangedOn TIMESTAMP
+  ChangedBy INT
+  ReasonForChange TEXT
+}
+
+Table attendancelog {
+  LogID INT [pk]
+  AttendanceID INT [ref: > attendance.AttendanceID]
+  PreviousStatus VARCHAR(10) [check: 'PreviousStatus in ("Present", "Absent", "Late")']
+  NewStatus VARCHAR(10) [check: 'NewStatus in ("Present", "Absent", "Late")']
+  ChangedOn TIMESTAMP
+  ChangedBy INT
+}
+
+Table assignments {
+  AssignmentID INT [pk]
+  CourseID INT [ref: > courses.CourseID]
+  Title VARCHAR(100)
+  Description TEXT
+  DueDate DATE
+  MaxGrade FLOAT
+  TotalPoints INT
+  AssignedDate DATE
+}
+
+Table assignmentsubmissions {
+  SubmissionID INT [pk]
+  AssignmentID INT [ref: > assignments.AssignmentID]
+  StudentID INT [ref: > students.StudentID]
+  SubmissionDate DATE
+  Grade FLOAT
+  Feedback TEXT
+  LatePenalty FLOAT
+  SubmittedFiles TEXT
+}
+
+Table classroom {
+  ClassroomID INT [pk]
+  CourseID INT [ref: > courses.CourseID]
+  RoomNumber VARCHAR(50)
+  Building VARCHAR(50)
+  Schedule VARCHAR(100)
+  Capacity INT
+}
+
+Table studentperformance {
+  MetricID INT [pk]
+  StudentID INT [ref: > students.StudentID]
+  GPA FLOAT
+  TotalCredits INT
+  Attendance FLOAT
+  Semester VARCHAR(10)
+  Year INT
+  Rank VARCHAR(50)
+}
+
+Table notifications {
+  NotificationID INT [pk]
+  StudentID INT [ref: > students.StudentID]
+  Message TEXT
+  SentDate TIMESTAMP
+  Status VARCHAR(10) [check: 'Status in ("Sent", "Pending", "Failed")']
+  IsRead BOOLEAN
+}
+
+Ref: students.StudentID > enrollments.StudentID
+Ref: courses.CourseID > enrollments.CourseID
+Ref: enrollments.EnrollmentID > grades.EnrollmentID
+Ref: students.StudentID > attendance.StudentID
+Ref: courses.CourseID > attendance.CourseID
+Ref: students.StudentID > feedback.StudentID
+Ref: teachers.TeacherID > feedback.TeacherID
+Ref: grades.EnrollmentID > gradeaudit.EnrollmentID
+Ref: enrollments.EnrollmentID > gradeaudit.EnrollmentID
+Ref: attendance.AttendanceID > attendancelog.AttendanceID
+Ref: teachers.TeacherID > attendancelog.ChangedBy
+Ref: courses.CourseID > assignments.CourseID
+Ref: assignments.AssignmentID > assignmentsubmissions.AssignmentID
+Ref: students.StudentID > assignmentsubmissions.StudentID
+Ref: courses.CourseID > classroom.CourseID
+Ref: teachers.TeacherID > classroom.ClassroomID
+Ref: students.StudentID > studentperformance.StudentID
+Ref: students.StudentID > notifications.StudentID

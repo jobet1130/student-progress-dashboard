@@ -1,0 +1,219 @@
+@startuml Student-Progress-Dashboard
+
+' Table: Students
+entity "Students" as students {
+  +StudentID : INT
+  FirstName  : VARCHAR(50)
+  LastName   : VARCHAR(50)
+  DateOfBirth: DATE
+  Gender     : ENUM('Male', 'Female', 'Other')
+  GradeLevel : INT
+  EnrollmentDate : DATE
+  Email      : VARCHAR(100)
+  Phone      : VARCHAR(20)
+  Address    : VARCHAR(255)
+  EmergencyContact : VARCHAR(50)
+  NationalID : VARCHAR(50)
+  Status     : ENUM('Active', 'Graduated', 'Dropped')
+}
+
+' Table: Teachers
+entity "Teachers" as teachers {
+  +TeacherID : INT
+  FirstName  : VARCHAR(50)
+  LastName   : VARCHAR(50)
+  Department : VARCHAR(50)
+  Email      : VARCHAR(100)
+  Phone      : VARCHAR(20)
+  Office     : VARCHAR(50)
+  HireDate   : DATE
+  Status     : ENUM('Active', 'Retired', 'On Leave')
+}
+
+' Table: Courses
+entity "Courses" as courses {
+  +CourseID  : INT
+  CourseName : VARCHAR(100)
+  TeacherID  : INT
+  CourseCode : VARCHAR(50)
+  Credits    : INT
+  Description: TEXT
+  Schedule   : VARCHAR(100)
+  Prerequisites: TEXT
+}
+
+' Table: Enrollments
+entity "Enrollments" as enrollments {
+  +EnrollmentID : INT
+  StudentID     : INT
+  CourseID      : INT
+  Semester      : VARCHAR(10)
+  Year          : INT
+  EnrollmentDate: DATE
+  Status        : ENUM('Active', 'Completed', 'Dropped')
+  WithdrawalDate: DATE
+  FinalGrade    : FLOAT
+}
+
+' Table: Grades
+entity "Grades" as grades {
+  +GradeID   : INT
+  EnrollmentID : INT
+  Grade     : FLOAT
+  GradeDate : DATE
+  Semester  : VARCHAR(10)
+  Year      : INT
+  InstructorComments : TEXT
+}
+
+' Table: Attendance
+entity "Attendance" as attendance {
+  +AttendanceID : INT
+  StudentID     : INT
+  CourseID      : INT
+  Date          : DATE
+  Status        : ENUM('Present', 'Absent', 'Late')
+  Reason        : TEXT
+}
+
+' Table: Feedback
+entity "Feedback" as feedback {
+  +FeedbackID : INT
+  StudentID   : INT
+  TeacherID   : INT
+  Comment     : TEXT
+  Rating      : INT
+  DateSubmitted : DATE
+  Anonymous   : BOOLEAN
+}
+
+' Table: GradeAudit (for tracking grade changes)
+entity "GradeAudit" as gradeaudit {
+  +AuditID      : INT
+  EnrollmentID  : INT
+  OldGrade      : FLOAT
+  NewGrade      : FLOAT
+  ChangedOn     : TIMESTAMP
+  ChangedBy     : INT
+  ReasonForChange: TEXT
+}
+
+' Table: AttendanceLog (tracking status changes)
+entity "AttendanceLog" as attendancelog {
+  +LogID        : INT
+  AttendanceID  : INT
+  PreviousStatus: ENUM('Present', 'Absent', 'Late')
+  NewStatus     : ENUM('Present', 'Absent', 'Late')
+  ChangedOn     : TIMESTAMP
+  ChangedBy     : INT
+}
+
+' Table: Assignments
+entity "Assignments" as assignments {
+  +AssignmentID : INT
+  CourseID     : INT
+  Title        : VARCHAR(100)
+  Description  : TEXT
+  DueDate      : DATE
+  MaxGrade     : FLOAT
+  TotalPoints  : INT
+  AssignedDate : DATE
+}
+
+' Table: AssignmentSubmissions
+entity "AssignmentSubmissions" as assignmentsubmissions {
+  +SubmissionID  : INT
+  AssignmentID   : INT
+  StudentID      : INT
+  SubmissionDate : DATE
+  Grade          : FLOAT
+  Feedback       : TEXT
+  LatePenalty    : FLOAT
+  SubmittedFiles : TEXT
+}
+
+' Table: Classroom (Physical or virtual class locations)
+entity "Classroom" as classroom {
+  +ClassroomID : INT
+  CourseID     : INT
+  RoomNumber   : VARCHAR(50)
+  Building     : VARCHAR(50)
+  Schedule     : VARCHAR(100)
+  Capacity     : INT
+}
+
+' Table: StudentPerformanceMetrics
+entity "StudentPerformanceMetrics" as studentperformance {
+  +MetricID    : INT
+  StudentID    : INT
+  GPA          : FLOAT
+  TotalCredits : INT
+  Attendance   : FLOAT
+  Semester     : VARCHAR(10)
+  Year         : INT
+  Rank         : VARCHAR(50)
+}
+
+' Table: Notifications
+entity "Notifications" as notifications {
+  +NotificationID : INT
+  StudentID       : INT
+  Message         : TEXT
+  SentDate        : TIMESTAMP
+  Status          : ENUM('Sent', 'Pending', 'Failed')
+  IsRead          : BOOLEAN
+}
+
+' Relationships
+students -- enrollments : "One Student can have many Enrollments"
+enrollments -- courses : "One Enrollment corresponds to one Course"
+enrollments -- grades : "One Enrollment has one Grade"
+students -- attendance : "One Student can have many Attendance records"
+courses -- attendance : "One Course can have many Attendance records"
+students -- feedback : "One Student can provide many Feedbacks"
+teachers -- feedback : "One Teacher can have many Feedbacks"
+
+' Grade Audits (Tracking grade changes)
+grades -- gradeaudit : "One Grade can have many Grade Audits"
+gradeaudit -- teachers : "Grade audit changed by Teacher (changedBy)"
+
+' Attendance Log (Tracking attendance status changes)
+attendance -- attendancelog : "One Attendance record can have many AttendanceLogs"
+attendancelog -- teachers : "Attendance status change made by Teacher (changedBy)"
+
+' Assignments and Submissions
+courses -- assignments : "One Course can have many Assignments"
+assignments -- assignmentsubmissions : "One Assignment can have many Submissions"
+students -- assignmentsubmissions : "One Student can make many Submissions"
+
+' Classroom Locations
+courses -- classroom : "One Course can have many Classrooms"
+classroom -- teachers : "One Teacher can teach many Classrooms"
+
+' Performance Metrics
+students -- studentperformance : "One Student has one Performance Metric record"
+studentperformance -- courses : "One Course contributes to many Student Performance metrics"
+
+' Notifications
+students -- notifications : "One Student can receive many Notifications"
+
+' Indexes
+students -[hidden]-> enrollments : "Foreign Key (StudentID)"
+courses -[hidden]-> enrollments : "Foreign Key (CourseID)"
+grades -[hidden]-> enrollments : "Foreign Key (EnrollmentID)"
+attendance -[hidden]-> students : "Foreign Key (StudentID)"
+attendance -[hidden]-> courses : "Foreign Key (CourseID)"
+feedback -[hidden]-> students : "Foreign Key (StudentID)"
+feedback -[hidden]-> teachers : "Foreign Key (TeacherID)"
+gradeaudit -[hidden]-> enrollments : "Foreign Key (EnrollmentID)"
+attendancelog -[hidden]-> attendance : "Foreign Key (AttendanceID)"
+attendancelog -[hidden]-> teachers : "Foreign Key (ChangedBy)"
+assignments -[hidden]-> courses : "Foreign Key (CourseID)"
+assignmentsubmissions -[hidden]-> assignments : "Foreign Key (AssignmentID)"
+assignmentsubmissions -[hidden]-> students : "Foreign Key (StudentID)"
+classroom -[hidden]-> courses : "Foreign Key (CourseID)"
+classroom -[hidden]-> teachers : "Foreign Key (TeacherID)"
+studentperformance -[hidden]-> students : "Foreign Key (StudentID)"
+notifications -[hidden]-> students : "Foreign Key (StudentID)"
+
+@enduml
