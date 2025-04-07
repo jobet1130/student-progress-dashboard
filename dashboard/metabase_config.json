@@ -1,0 +1,181 @@
+{
+    "databases": [
+        {
+            "db_type": "postgres",
+            "host": "postgres-dbserver.local",
+            "port": 5432,
+            "dbname": "student_progress_db",
+            "user": "metabase_admin",
+            "password": "secure_password123",
+            "ssl": true,
+            "timezone": "Asia/Manila",
+            "connection_pool": {
+                "max_connections": 15,
+                "timeout": 30000,
+                "idle_timeout": 600000
+            }
+        },
+        {
+            "db_type": "mysql",
+            "host": "mysql-dbserver.local",
+            "port": 3306,
+            "dbname": "teacher_feedback_db",
+            "user": "metabase_admin",
+            "password": "secure_password123",
+            "ssl": true,
+            "timezone": "Asia/Manila",
+            "connection_pool": {
+                "max_connections": 10,
+                "timeout": 30000,
+                "idle_timeout": 600000
+            }
+        }
+    ],
+    "metabase": {
+        "site_name": "Student Progress and Performance Dashboard",
+        "site_url": "https://metabase.school.edu",
+        "email": "admin@school.edu",
+        "password": "admin_secure_password123",
+        "authentication": {
+            "enabled": true,
+            "auth_method": "OAuth",
+            "oauth_provider": "Google",
+            "oauth_redirect_uri": "https://metabase.school.edu/auth/callback"
+        },
+        "session_timeout": 30,
+        "language": "en",
+        "branding": {
+            "logo_url": "https://school.edu/assets/logo.png",
+            "favicon_url": "https://school.edu/assets/favicon.ico",
+            "theme_color": "#0044cc"
+        }
+    },
+    "dashboards": [
+        {
+            "id": 1,
+            "name": "Student Performance Overview",
+            "description": "A comprehensive dashboard showing student performance metrics such as GPA, attendance, and overall performance rank.",
+            "filters": {
+                "semester": "Spring 2025",
+                "year": 2025
+            },
+            "widgets": [
+                {
+                    "id": 1,
+                    "type": "table",
+                    "title": "Top Performing Students",
+                    "query": "SELECT student_id, first_name, last_name, gpa, attendance_percentage, performance_rank FROM student_performance WHERE semester = 'Spring 2025' AND year = 2025 ORDER BY gpa DESC LIMIT 10;",
+                    "database": "postgres",
+                    "columns": [
+                        "student_id",
+                        "first_name",
+                        "last_name",
+                        "gpa",
+                        "attendance_percentage",
+                        "performance_rank"
+                    ],
+                    "styling": {
+                        "column_widths": {
+                            "student_id": 100,
+                            "first_name": 150,
+                            "last_name": 150,
+                            "gpa": 75,
+                            "attendance_percentage": 125,
+                            "performance_rank": 120
+                        },
+                        "row_limit": 10
+                    }
+                },
+                {
+                    "id": 2,
+                    "type": "bar_chart",
+                    "title": "Attendance vs. GPA",
+                    "query": "SELECT student_id, attendance_percentage, gpa FROM student_performance WHERE semester = 'Spring 2025' AND year = 2025 ORDER BY attendance_percentage DESC;",
+                    "database": "postgres",
+                    "x_axis": "attendance_percentage",
+                    "y_axis": "gpa",
+                    "chart_options": {
+                        "x_axis_label": "Attendance Percentage",
+                        "y_axis_label": "GPA",
+                        "bar_color": "#00aaff"
+                    }
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "name": "Teacher Feedback Dashboard",
+            "description": "This dashboard displays feedback ratings for teachers and aggregates performance insights from a MySQL database.",
+            "filters": {},
+            "widgets": [
+                {
+                    "id": 3,
+                    "type": "table",
+                    "title": "Teacher Feedback Overview",
+                    "query": "SELECT teacher_id, first_name, last_name, avg(rating) AS average_rating, COUNT(*) AS total_feedbacks FROM teacher_feedback GROUP BY teacher_id, first_name, last_name;",
+                    "database": "mysql",
+                    "columns": [
+                        "teacher_id",
+                        "first_name",
+                        "last_name",
+                        "average_rating",
+                        "total_feedbacks"
+                    ],
+                    "styling": {
+                        "column_widths": {
+                            "teacher_id": 100,
+                            "first_name": 150,
+                            "last_name": 150,
+                            "average_rating": 100,
+                            "total_feedbacks": 120
+                        },
+                        "row_limit": 10
+                    }
+                },
+                {
+                    "id": 4,
+                    "type": "bar_chart",
+                    "title": "Teacher Feedback Distribution",
+                    "query": "SELECT feedback_rank, COUNT(*) FROM teacher_feedback GROUP BY feedback_rank;",
+                    "database": "mysql",
+                    "x_axis": "feedback_rank",
+                    "y_axis": "count",
+                    "chart_options": {
+                        "bar_color": "#f4a261",
+                        "x_axis_label": "Feedback Rank",
+                        "y_axis_label": "Number of Feedbacks"
+                    }
+                }
+            ]
+        }
+    ],
+    "permissions": {
+        "admin": {
+            "can_edit_dashboards": true,
+            "can_add_widgets": true,
+            "can_delete_widgets": true,
+            "can_edit_permissions": true
+        },
+        "user": {
+            "can_view_dashboards": true,
+            "can_view_widgets": true,
+            "can_add_filters": false
+        }
+    },
+    "notifications": {
+        "enabled": true,
+        "alert_types": [
+            "low_gpa",
+            "low_attendance"
+        ],
+        "email_notifications": {
+            "enabled": true,
+            "smtp_server": "smtp.school.edu",
+            "smtp_port": 587,
+            "smtp_user": "no-reply@school.edu",
+            "smtp_password": "secure_email_password",
+            "from_email": "no-reply@school.edu",
+            "subject_prefix": "[School Dashboard] "
+        }
+    }
+}
